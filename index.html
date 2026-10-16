@@ -119,13 +119,15 @@ body{word-break:keep-all;overflow-wrap:break-word;-webkit-text-size-adjust:100%}
 .dots{margin:4px 0 8px}.dots i{display:inline-block;width:9px;height:9px;border:2px solid #1b1d22;margin:0 3px;background:#fff}.dots i.on{background:#ffd23f}
 .code{font-family:var(--pf);font-size:24px;letter-spacing:2px;background:#fff;border:3px solid #1b1d22;padding:6px 14px;margin:6px 0;min-width:150px}
 .cmp{display:flex;gap:8px;align-items:center;justify-content:center;width:100%}.cmp input{width:60%!important;margin:4px 0!important}
+#fsi{position:absolute;top:10px;right:6px;z-index:6;width:32px;height:32px;padding:0;border:3px solid #1b1d22;background:#fff8d6;color:#1b1d22;display:flex;align-items:center;justify-content:center;border-radius:0;box-shadow:0 2px 0 #1b1d22}
+#fsn{position:absolute;top:48px;right:6px;z-index:6;max-width:78%;background:#1b1d22;color:#fff;font-size:12.5px;line-height:1.4;padding:6px 8px;display:none}
 </style>
 </head>
 <body>
 <div id="hud"><div id="top"><span id="badge"></span><span id="tinfo"></span><span id="sc"></span><button id="mu">설정</button></div>
 <div id="bar"><div id="fill"></div><span id="pct"></span></div>
 <div id="info"><span id="nx"></span><span id="cmf"></span><span id="tm"></span></div><div id="msg"></div></div>
-<div id="wrap"><div id="stage"><canvas id="cv"></canvas><canvas id="tv"></canvas></div><div id="toast"></div><div id="ov"></div></div>
+<div id="wrap"><div id="stage"><canvas id="cv"></canvas><canvas id="tv"></canvas></div><div id="toast"></div><div id="ov"></div><button id="fsi" aria-label="전체화면"></button><div id="fsn"></div></div>
 <script>
 const W=360,H=500,S=52,OX=50,OY=16,C=5,R=9;let CYC=16,ANN=8,BAG=3,DOOR=4.2;
 const LINES={
@@ -231,10 +233,10 @@ function spawnRush(){rushDone=true;const free=[];for(const x of[0,C-1])for(let y
  const door=dx==null?best[0]:dx,r=mk(door,4,false);r.sp='rush';r.px=door===0?-.8:C-.2;r.py=4;r.dir=door===0?1:-1;r.tk=clock+.3;r.tg={x:best[0],y:best[1]};npcs.push(r);toast('닫히기 전 우산 돌진!','vi')}
 function panel(h){ov.style.display='flex';ov.innerHTML='<div class="card">'+h+'</div>'}
 function showMenu(){state='idle';paused=false;startRound();phase='idle';
- panel('<div class="logo">지하철<br>눈치 생존</div><p>빈자리를 사수하라!</p><button class="mb" id="b1">게임시작</button><button class="mb" id="b2">게임방법</button><button class="mb" id="b4">기록</button><button class="mb sub" id="b3">설정</button><button class="chip sm" id="fsb" style="margin-top:10px">전체화면</button><p class="sm" id="fsm"></p>');
- $('b1').onclick=showSelect;$('b2').onclick=showHow;$('b3').onclick=()=>showSettings('menu');$('b4').onclick=showRecords;$('fsb').onclick=goFS}
+ panel('<div class="logo">지하철<br>눈치 생존</div><p>빈자리를 사수하라!</p><button class="mb" id="b1">게임시작</button><button class="mb" id="b2">게임방법</button><button class="mb" id="b4">기록</button><button class="mb sub" id="b3">설정</button>');
+ $('b1').onclick=showSelect;$('b2').onclick=showHow;$('b3').onclick=()=>showSettings('menu');$('b4').onclick=showRecords}
 
-function showSelect(){panel('<h2>게임 준비</h2><div class="cs"><button class="ar" id="pl">‹</button><canvas id="pv" width="168" height="168" style="width:84px;height:84px"></canvas><button class="ar" id="pr">›</button></div><div class="cn"><b id="cnm"></b><button class="chip sm" id="cu">꾸미기</button></div><p class="sm" id="cd"></p><div class="lb">노선 (호선)</div><div class="chips" id="cl"></div><div class="lb">시간대</div><div class="chips" id="ct"></div><div class="chips" id="ce"></div><p class="sm" id="ds"></p><button class="chip sm" id="rm">친구와 같은 판</button><button class="mb" id="gs">출발</button><button class="mb sub" id="bk">뒤로</button>');
+function showSelect(){panel('<h2>게임 준비</h2><div class="cs"><button class="ar" id="pl">‹</button><canvas id="pv" width="168" height="168" style="width:84px;height:84px"></canvas><button class="ar" id="pr">›</button></div><div class="cn"><b id="cnm"></b><button class="chip sm" id="cu">꾸미기</button></div><p class="sm" id="cd"></p><div class="lb">노선 (호선)</div><div class="chips" id="cl"></div><div class="lb">시간대</div><div class="chips" id="ct"></div><div class="chips" id="ce"></div><p class="sm" id="ds"></p><button class="chip sm" id="rm">같이하기</button><button class="mb" id="gs">출발</button><button class="mb sub" id="bk">뒤로</button>');
  const ORD=['s','w','u'],eb=document.createElement('button');eb.className='chip';eb.textContent='급행';
  const upd=()=>{const L=LINES[line];$('ce').style.display=L.ex?'':'none';if(!L.ex)expr=false;diff=calc();const nst=diff<=.46?1:diff<=.62?2:diff<=.8?3:diff<=.95?4:5;
   $('ds').innerHTML=`난이도 ${'★'.repeat(nst)}${'☆'.repeat(5-nst)} · 최고 ${bestOf()}점<br>시작역 ${stList()[0]} · ${stList().length}개 역${roomOn?'<br>방 코드 '+esc(roomCode):''}`;$('cnm').textContent=CH[ch].n;$('cd').textContent=CH[ch].d;eb.classList.toggle('on',expr);
@@ -245,12 +247,12 @@ function showSelect(){panel('<h2>게임 준비</h2><div class="cs"><button class
  $('pl').onclick=()=>{ch=ORD[(ORD.indexOf(ch)+2)%3];upd()};$('pr').onclick=()=>{ch=ORD[(ORD.indexOf(ch)+1)%3];upd()};
  upd();$('gs').onclick=begin;$('cu').onclick=showCustom;$('rm').onclick=showRoom;$('bk').onclick=showMenu}
 function showSettings(from){const play=from==='play';if(play)try{speechSynthesis.cancel()}catch(e){}
- panel(`<h2>설정</h2><div class="lb">배경음악 곡</div><div class="chips" id="tk"></div><div class="lb">배경음악 <span id="v1">${Math.round(vol.bgm*100)}</span>%</div><input type="range" id="r1" min="0" max="100" value="${vol.bgm*100}"><div class="lb">효과음 <span id="v2">${Math.round(vol.sfx*100)}</span>%</div><input type="range" id="r2" min="0" max="100" value="${vol.sfx*100}"><div class="lb">안내방송</div><div class="chips"><button class="chip ${vol.voice?'on':''}" id="vb">${vol.voice?'켜짐':'꺼짐'}</button></div><div class="lb">방송 목소리</div><div class="chips" id="vk"></div><div class="lb">진동</div><div class="chips"><button class="chip ${vol.vib!==false?'on':''}" id="vib">${vol.vib!==false?'켜짐':'꺼짐'}</button></div><div class="chips" style="margin-top:8px"><button class="chip" id="fsb2">전체화면</button></div><p class="sm" id="fsm"></p><p class="sm">${('vibrate' in navigator)?'':'이 기기는 웹 진동을 지원하지 않아요. '}소리가 안 나면 기기의 무음 모드와 볼륨을 확인해 주세요.</p>`+(play?'<button class="mb" id="rs">계속하기</button><button class="mb sub" id="ex">나가기</button>':'<button class="mb sub" id="bk">뒤로</button>'));
+ panel(`<h2>설정</h2><div class="lb">배경음악 곡</div><div class="chips" id="tk"></div><div class="lb">배경음악 <span id="v1">${Math.round(vol.bgm*100)}</span>%</div><input type="range" id="r1" min="0" max="100" value="${vol.bgm*100}"><div class="lb">효과음 <span id="v2">${Math.round(vol.sfx*100)}</span>%</div><input type="range" id="r2" min="0" max="100" value="${vol.sfx*100}"><div class="lb">안내방송</div><div class="chips"><button class="chip ${vol.voice?'on':''}" id="vb">${vol.voice?'켜짐':'꺼짐'}</button></div><div class="lb">방송 목소리</div><div class="chips" id="vk"></div><div class="lb">진동</div><div class="chips"><button class="chip ${vol.vib!==false?'on':''}" id="vib">${vol.vib!==false?'켜짐':'꺼짐'}</button></div><p class="sm">${('vibrate' in navigator)?'':'이 기기는 웹 진동을 지원하지 않아요. '}소리가 안 나면 기기의 무음 모드와 볼륨을 확인해 주세요.</p>`+(play?'<button class="mb" id="rs">계속하기</button><button class="mb sub" id="ex">나가기</button>':'<button class="mb sub" id="bk">뒤로</button>'));
  TRACKS.forEach((T,i)=>{const b=document.createElement('button');b.className='chip'+(vol.track===i?' on':'');b.textContent=T.n;b.onclick=()=>{setTrack(i);document.querySelectorAll('#tk .chip').forEach((c,j)=>c.classList.toggle('on',j===i))};$('tk').appendChild(b)});
  $('r1').oninput=e=>{vol.bgm=e.target.value/100;$('v1').textContent=e.target.value;applyVol();saveVol()};
  $('r2').oninput=e=>{vol.sfx=e.target.value/100;$('v2').textContent=e.target.value;applyVol();saveVol()};
  $('vb').onclick=()=>{vol.voice=!vol.voice;$('vb').textContent=vol.voice?'켜짐':'꺼짐';$('vb').classList.toggle('on',vol.voice);saveVol()};
- $('vib').onclick=()=>{vol.vib=!(vol.vib!==false);$('vib').textContent=vol.vib?'켜짐':'꺼짐';$('vib').classList.toggle('on',vol.vib);saveVol();buzz(40)};$('fsb2').onclick=goFS;
+ $('vib').onclick=()=>{vol.vib=!(vol.vib!==false);$('vib').textContent=vol.vib?'켜짐':'꺼짐';$('vib').classList.toggle('on',vol.vib);saveVol();buzz(40)};
  {loadVoices();const names=[''].concat(VOICES.slice(0,4).map(v=>v.name));names.forEach((nm,i)=>{const b=document.createElement('button');b.className='chip'+((vol.vname||'')===nm?' on':'');b.textContent=i===0?'자동':(nm.replace(/Microsoft |Google |\(.*\)/g,'').trim().slice(0,10)||('음성 '+i));b.onclick=()=>{vol.vname=nm;saveVol();document.querySelectorAll('#vk .chip').forEach((c,j)=>c.classList.toggle('on',j===i));try{speechSynthesis.cancel()}catch(e){}say('이번 역은 강남, 강남역입니다.',1)};$('vk').appendChild(b)});if(!VOICES.length)$('vk').innerHTML='<p class="sm">이 기기에 한국어 음성이 없어 기본 음성을 사용합니다</p>'}
  if(play){$('rs').onclick=()=>{paused=false;ov.style.display='none';last=performance.now()};$('ex').onclick=showMenu}else $('bk').onclick=showMenu}
 function begin(){initAudio();score=0;combo=0;okN=0;stress=0;rd=0;seenV=new Set();paused=false;expr=expr&&!!LINES[line].ex;so=0;state='play';ov.style.display='none';startRound();last=performance.now();try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
@@ -309,15 +311,18 @@ function makeCode(){let c='';for(let i=0;i<4;i++)c+=ROOM_ALPHA[Math.random()*ROO
 function applyCode(raw){const t=String(raw).toUpperCase().replace(/[^0-9A-Z-]/g,''),m=t.match(/^([12479])(X?)([A-E])-([0-9A-Z]{3,8})$/);if(!m)return false;if(m[2]==='X'&&!LINES[m[1]].ex)return false;line=m[1];time=m[3].toLowerCase();expr=m[2]==='X';roomCode=m[1]+m[2]+m[3]+'-'+m[4];roomOn=true;return true}
 function clearRoom(){roomOn=false;roomCode=''}
 async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){try{const i=document.createElement('textarea');i.value=t;document.body.appendChild(i);i.select();document.execCommand('copy');i.remove();return true}catch(x){return false}}}
-function showRoom(){panel(`<h2>친구와 같은 판</h2><p class="sm">같은 코드를 입력하면 같은 노선·시간대에서 같은 승객 배치로 시작해요. 끝난 뒤 점수를 비교해 보세요.</p><div class="code" id="rcur"></div><button class="mb" id="rmk">코드 만들기</button><input id="rc" type="text" maxlength="12" placeholder="받은 코드 입력" autocomplete="off"><button class="mb" id="rok">코드 적용</button><p class="sm" id="rmsg"></p><button class="mb sub" id="rno">혼자 하기</button><button class="mb sub" id="rbk">뒤로</button>`);
+function showRoom(){panel(`<h2>같이하기</h2><p class="sm">같은 코드를 입력하면 같은 노선·시간대에서 같은 승객 배치로 시작해요. 끝난 뒤 점수를 비교해 보세요.</p><div class="code" id="rcur"></div><button class="mb" id="rmk">코드 만들기</button><input id="rc" type="text" maxlength="12" placeholder="받은 코드 입력" autocomplete="off"><button class="mb" id="rok">코드 적용</button><p class="sm" id="rmsg"></p><button class="mb sub" id="rno">혼자 하기</button><button class="mb sub" id="rbk">뒤로</button>`);
  const cur=()=>{$('rcur').textContent=roomOn?roomCode:'코드 없음'};cur();
  $('rmk').onclick=()=>{roomCode=makeCode();roomOn=true;cur();copyText(roomCode);$('rmsg').textContent='코드를 만들어 복사했어요. 친구에게 보내 주세요.'};
  $('rok').onclick=()=>{if(applyCode($('rc').value)){cur();$('rmsg').textContent=stageName(stageKey())+' 코드를 적용했어요.'}else $('rmsg').textContent='코드 형식이 맞지 않아요. 예: 2B-K7F2'};
  $('rno').onclick=()=>{clearRoom();cur();$('rmsg').textContent='혼자 하기로 바꿨어요.'};$('rbk').onclick=showSelect}
-function goFS(){const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen,m=$('fsm');
+const FS_IN='<svg viewBox="0 0 24 24" width="20" height="20"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',FS_OUT='<svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+let fnT=0;function fsNote(t){const n=$('fsn');if(!n)return;n.textContent=t;n.style.display='block';clearTimeout(fnT);fnT=setTimeout(()=>{n.style.display='none'},3800)}
+function fsIcon(){const b=$('fsi');if(b)b.innerHTML=(document.fullscreenElement||document.webkitFullscreenElement)?FS_OUT:FS_IN}
+function goFS(){const el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;
  if(document.fullscreenElement||document.webkitFullscreenElement){try{(document.exitFullscreen||document.webkitExitFullscreen).call(document)}catch(e){}return}
- if(!req){if(m)m.textContent='이 브라우저는 전체화면을 지원하지 않아요. 아이폰은 공유 버튼에서 홈 화면에 추가를 하면 전체 화면으로 열려요.';return}
- try{const p=req.call(el);if(p&&p.catch)p.catch(()=>{if(m)m.textContent='전체화면이 막혀 있어요. 링크를 브라우저에서 직접 열어 주세요.'});try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait');if(o&&o.catch)o.catch(()=>{})}catch(e){}}catch(e){if(m)m.textContent='전체화면을 켤 수 없어요.'}}
+ if(!req){fsNote('이 브라우저는 전체화면을 지원하지 않아요. 아이폰은 공유 버튼에서 홈 화면에 추가를 하면 전체 화면으로 열려요.');return}
+ try{const p=req.call(el);if(p&&p.catch)p.catch(()=>fsNote('전체화면이 막혀 있어요. 링크를 브라우저에서 직접 열어 주세요.'));try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait');if(o&&o.catch)o.catch(()=>{})}catch(e){}}catch(e){fsNote('전체화면을 켤 수 없어요.')}}
 
 let PID='';try{PID=localStorage.getItem('subwayPid')||'';if(!PID){PID=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);localStorage.setItem('subwayPid',PID)}}catch(e){PID='local'}
 const LB_URL='';
@@ -494,9 +499,7 @@ function draw(){K=performance.now()/1000;const k=K,L=LINES[line],moving=phase===
  it.sort((a,b)=>a.y-b.y).forEach(i=>i.f());
  {const am={a:'rgba(90,120,255,.10)',c:'rgba(255,240,200,.05)',d:'rgba(255,140,60,.12)',e:'rgba(10,20,60,.30)'}[time];if(am){ctx.fillStyle=am;ctx.fillRect(OX,OY,C*S,R*S)}
   if(time==='e'||time==='a')for(let r=0;r<R;r+=2){const lg=ctx.createRadialGradient(W/2,OY+r*S+S,5,W/2,OY+r*S+S,75);lg.addColorStop(0,'rgba(255,250,220,.17)');lg.addColorStop(1,'rgba(255,250,220,0)');ctx.fillStyle=lg;ctx.fillRect(OX,OY,C*S,R*S)}}
- const mx=gx(me.px),my=gy(me.py);
- const ay=my-36+Math.sin(k*6)*3;ctx.fillStyle='#ffd23f';ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx-6,ay);ctx.lineTo(mx+6,ay);ctx.lineTo(mx,ay+8);ctx.closePath();ctx.fill();ctx.stroke();
- txs.push({tag:1,s:'나',x:mx,y:ay-12,bg:'#9ec1ff'});drawFx();flushText()}
+ drawFx();flushText()}
 function loop(ts){const dt=Math.min(.1,(ts-last)/1000);last=ts;if(!paused)update(dt);hud();draw();requestAnimationFrame(loop)}
 addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;const m={ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1],ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0]}[e.key];if(m){e.preventDefault();move(...m)}});
 let sx=0,sy=0,dn=false;
@@ -507,6 +510,8 @@ $('mu').onclick=()=>{if(state==='play'&&!paused){paused=true;showSettings('play'
 addEventListener('pointerdown',initAudio);addEventListener('pointerdown',e=>{if(e.target.tagName==='BUTTON')sfx('click')});
 function fit(){const w=$('wrap'),s=Math.min(w.clientWidth/W,(w.clientHeight-14)/H);if(s>0){const cw=Math.round(W*s),chh=Math.round(H*s),d=Math.min(2,devicePixelRatio||1);$('stage').style.width=cw+'px';$('stage').style.height=chh+'px';tv.width=Math.round(cw*d);tv.height=Math.round(chh*d)}}
 addEventListener('resize',fit);try{new ResizeObserver(fit).observe($('wrap'))}catch(e){}
+if(document.addEventListener){document.addEventListener('fullscreenchange',fsIcon);document.addEventListener('webkitfullscreenchange',fsIcon)}
+if($('fsi')){$('fsi').onclick=goFS;fsIcon()}
 if(document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play'&&!paused){paused=true;showSettings('play')}});
 showMenu();fit();requestAnimationFrame(loop);
 </script>
